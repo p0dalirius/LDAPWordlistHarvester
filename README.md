@@ -1,1 +1,2 @@
-# GenWordlistFromAD
+# LDAPWordlistHarvester
+
