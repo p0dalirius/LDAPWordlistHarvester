@@ -3,6 +3,8 @@
 <p align="center">
     A tool to generate a wordlist from the information present in LDAP, in order to crack passwords of domain accounts.
     <br>
+    <i>The bigger the domain is, the better the wordlist will be</i>
+    <br>
     <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/p0dalirius/ExtractBitlockerKeys">
     <a href="https://twitter.com/intent/follow?screen_name=podalirius_" title="Follow"><img src="https://img.shields.io/twitter/follow/podalirius_?label=Podalirius&style=social"></a>
     <a href="https://www.youtube.com/c/Podalirius_?sub_confirmation=1" title="Subscribe"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCF_x5O7CSfr82AfNVTKOv_A?style=social"></a>
