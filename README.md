@@ -20,6 +20,8 @@
    - [x] **All LDAP objects**: `descriptions`
  - [x] Choose wordlist output file name with option `--outputfile`
 
+---
+
 ## Demonstration
 
 To generate a wordlist from the LDAP of the domain `domain.local` you can use this command:
@@ -32,6 +34,7 @@ You will get the following output:
 
 ![](./.github/example.png)
 
+---
 
 ## Usage
 
