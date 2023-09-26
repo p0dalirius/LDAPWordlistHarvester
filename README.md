@@ -38,6 +38,16 @@ You will get the following output:
 
 ---
 
+## Cracking passwords
+
+Once you have this wordlist, you should crack your NTDS using hashcat, `--loopback` and the rule [clem9669_large.rule](https://github.com/clem9669/hashcat-rule/blob/master/clem9669_large.rule).
+
+```
+./hashcat --hash-type 1000 --potfile-path ./client.potfile ./client.ntds ./wordlist.txt --rules ./clem9669_large.rule --loopback
+```
+
+---
+
 ## Usage
 
 ```
