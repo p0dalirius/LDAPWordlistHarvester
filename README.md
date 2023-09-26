@@ -32,11 +32,11 @@ To generate a wordlist from the LDAP of the domain `domain.local` you can use th
 ./LDAPWordlistHarvester.py -d 'domain.local' -u 'Administrator' -p 'P@ssw0rd123!' --dc-ip 192.168.1.101
 ```
 
-You will get the following output if using the python version:
+You will get the following output if using the [Python version](LDAPWordlistHarvester.py):
 
 ![](./.github/example_python.png)
 
-You will get the following output if using the python version:
+You will get the following output if using the [Powershell version](LDAPWordlistHarvester.ps1):
 
 ![](./.github/example_powershell.png)
 
