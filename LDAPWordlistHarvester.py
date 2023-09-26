@@ -179,7 +179,7 @@ if __name__ == '__main__':
 
 
     # Extracting organizationalUnit
-    print("[>] Extracting organizationalUnit of all LDAP objects ... ", end="", flush=True)
+    print("[>] Extracting organizationalUnit names ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
         auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
         searchbase=defaultNamingContext,
