@@ -1,4 +1,4 @@
-![](.github/banner.png)
+![](./.github/banner.png)
 
 <p align="center">
     A tool to generate a wordlist from the information present in LDAP, in order to crack non-random passwords of domain accounts.
