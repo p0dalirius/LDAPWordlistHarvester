@@ -58,7 +58,7 @@ Once you have this wordlist, you should crack your NTDS using hashcat, `--loopba
 $ ./LDAPWordlistHarvester.py -h
 LDAPWordlistHarvester.py v1.1 - by @podalirius_
 
-usage: LDAPWordlistHarvester.py [-h] [-v] [-o OUTPUTFILE] --dc-ip ip address [-d DOMAIN] [-u USER] [--no-pass | -p PASSWORD | -H [LMHASH:]NTHASH | --aes-key hex key] [-k]
+usage: LDAPWordlistHarvester.py [-h] [-v] [-o OUTPUTFILE] --dc-ip ip address [-d DOMAIN] [-u USER] [--ldaps] [--no-pass | -p PASSWORD | -H [LMHASH:]NTHASH | --aes-key hex key] [-k]
 
 options:
   -h, --help            show this help message and exit
@@ -71,6 +71,7 @@ Authentication & connection:
   -d DOMAIN, --domain DOMAIN
                         (FQDN) domain to authenticate to
   -u USER, --user USER  user to authenticate with
+  --ldaps               Use LDAPS instead of LDAP
 
 Credentials:
   --no-pass             Don't ask for password (useful for -k)

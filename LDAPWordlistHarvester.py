@@ -66,7 +66,9 @@ def parseArgs():
     authconn = parser.add_argument_group('Authentication & connection')
     authconn.add_argument("--dc-ip", required=True, action="store", metavar="ip address", help="IP Address of the domain controller or KDC (Key Distribution Center) for Kerberos. If omitted it will use the domain part (FQDN) specified in the identity parameter")
     authconn.add_argument("-d", "--domain", dest="auth_domain", metavar="DOMAIN", action="store", default="", help="(FQDN) domain to authenticate to")
-    authconn.add_argument("-u", "--user", dest="auth_username", metavar="USER", action="store", default="", help="user to authenticate with")
+    authconn.add_argument("-u", "--user", dest="auth_username", metavar="USER", action="store", default="", help="user to authenticate with")    
+    authconn.add_argument("--ldaps", dest="use_ldaps", action="store_true", default=False, help="Use LDAPS instead of LDAP")
+
 
     secret = parser.add_argument_group("Credentials")
     cred = secret.add_mutually_exclusive_group()
@@ -89,7 +91,7 @@ if __name__ == '__main__':
     wordlist = []
 
     print("[>] Getting information from remote LDAP host ... ", end="", flush=True)
-    ldap_server, ldap_session = init_ldap_session(auth_domain=options.auth_domain, auth_username=options.auth_username, auth_password=options.auth_password, auth_lm_hash=auth_lm_hash, auth_nt_hash=auth_nt_hash, auth_dc_ip=options.dc_ip)
+    ldap_server, ldap_session = init_ldap_session(auth_domain=options.auth_domain, auth_username=options.auth_username, auth_password=options.auth_password, auth_lm_hash=auth_lm_hash, auth_nt_hash=auth_nt_hash, auth_dc_ip=options.dc_ip, use_ldaps=options.use_ldaps)
     configurationNamingContext = ldap_server.info.other["configurationNamingContext"]
     defaultNamingContext = ldap_server.info.other["defaultNamingContext"]
     print("done.")
