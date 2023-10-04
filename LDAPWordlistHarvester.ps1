@@ -1,4 +1,4 @@
-# File name          : LDAPWordlistHarvester.ps1
+﻿# File name          : LDAPWordlistHarvester.ps1
 # Author             : Podalirius (@podalirius_)
 # Date created       : 21 September 2023
 
