@@ -101,7 +101,7 @@ if __name__ == '__main__':
     print("[>] Extracting AD Sites from LDAP ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
         auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=configurationNamingContext,
+        searchbase=configurationNamingContext, use_ldaps=options.use_ldaps,
         query="(objectClass=site)", attributes=["name", "description"]
     )
     added_words = []
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     print("[>] Extracting user and computer names from LDAP ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
         auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
         query="(|(objectClass=person)(objectClass=user)(objectClass=computer))", attributes=["name", "sAMAccountName"]
     )
     added_words = []
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     print("[>] Extracting descriptions of all LDAP objects ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
         auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
         query="(description=*)", attributes=["description"]
     )
     added_words = []
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     print("[>] Extracting group names of all LDAP objects ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
         auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
         query="(objectCategory=group)", attributes=["name"]
     )
     added_words = []
@@ -184,7 +184,7 @@ if __name__ == '__main__':
     print("[>] Extracting organizationalUnit names ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
         auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
         query="(objectCategory=organizationalUnit)", attributes=["name"]
     )
     added_words = []
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     print("[>] Extracting servicePrincipalName of all LDAP objects ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
         auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
         query="(servicePrincipalName=*)", attributes=["servicePrincipalName"]
     )
     added_words = []
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     print("[>] Extracting trustedDomains from LDAP ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
         auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
         query="(objectClass=trustedDomain)", attributes=["name"]
     )
     added_words = []
