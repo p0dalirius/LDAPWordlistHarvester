@@ -65,6 +65,7 @@ def parseArgs():
 
     authconn = parser.add_argument_group('Authentication & connection')
     authconn.add_argument("--dc-ip", required=True, action="store", metavar="ip address", help="IP Address of the domain controller or KDC (Key Distribution Center) for Kerberos. If omitted it will use the domain part (FQDN) specified in the identity parameter")
+    authconn.add_argument('--kdcHost', dest="kdcHost", action='store', metavar="FQDN KDC", help='FQDN of KDC for Kerberos.')
     authconn.add_argument("-d", "--domain", dest="auth_domain", metavar="DOMAIN", action="store", default="", help="(FQDN) domain to authenticate to")
     authconn.add_argument("-u", "--user", dest="auth_username", metavar="USER", action="store", default="", help="user to authenticate with")    
     authconn.add_argument("--ldaps", dest="use_ldaps", action="store_true", default=False, help="Use LDAPS instead of LDAP")
@@ -88,10 +89,17 @@ if __name__ == '__main__':
             options.auth_hashes = ":" + options.auth_hashes
     auth_lm_hash, auth_nt_hash = parse_lm_nt_hashes(options.auth_hashes)
 
+    if options.auth_key is not None:
+        options.use_kerberos = True
+    
+    if options.use_kerberos is True and options.kdcHost is None:
+        print("[!] Specify KDC's Hostname of FQDN using the argument --kdcHost")
+        exit()
+
     wordlist = []
 
     print("[>] Getting information from remote LDAP host ... ", end="", flush=True)
-    ldap_server, ldap_session = init_ldap_session(auth_domain=options.auth_domain, auth_username=options.auth_username, auth_password=options.auth_password, auth_lm_hash=auth_lm_hash, auth_nt_hash=auth_nt_hash, auth_dc_ip=options.dc_ip, use_ldaps=options.use_ldaps)
+    ldap_server, ldap_session = init_ldap_session(auth_domain=options.auth_domain, auth_username=options.auth_username, auth_password=options.auth_password, auth_lm_hash=auth_lm_hash, auth_nt_hash=auth_nt_hash, auth_key=options.auth_key, use_kerberos=options.use_kerberos, kdcHost=options.kdcHost, use_ldaps=options.use_ldaps, auth_dc_ip=options.dc_ip)
     configurationNamingContext = ldap_server.info.other["configurationNamingContext"]
     defaultNamingContext = ldap_server.info.other["defaultNamingContext"]
     print("done.")
@@ -100,14 +108,17 @@ if __name__ == '__main__':
     # Extracting AD sites
     print("[>] Extracting AD Sites from LDAP ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
-        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=configurationNamingContext, use_ldaps=options.use_ldaps,
+        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes, auth_key=options.auth_key,
+        searchbase=configurationNamingContext, use_ldaps=options.use_ldaps, use_kerberos=options.use_kerberos, kdcHost=options.kdcHost,
         query="(objectClass=site)", attributes=["name", "description"]
     )
     added_words = []
     for dn, data in ldap_results.items():
         added_words += ' '.join(data["description"]).split(' ')
-        added_words += data["name"].split(' ')
+        if type(data["name"]) == list:
+            added_words += ' '.join([e for e in data["name"] if len(e) != 0]).split(' ')
+        else:
+            added_words += data["name"].split(' ')
     added_words = list(set(added_words))
     print("found %d words" % (len(added_words)), flush=True)
     len_before = len(wordlist)
@@ -119,8 +130,8 @@ if __name__ == '__main__':
     # Extracting user and computer
     print("[>] Extracting user and computer names from LDAP ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
-        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
+        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes, auth_key=options.auth_key,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps, use_kerberos=options.use_kerberos, kdcHost=options.kdcHost,
         query="(|(objectClass=person)(objectClass=user)(objectClass=computer))", attributes=["name", "sAMAccountName"]
     )
     added_words = []
@@ -146,8 +157,8 @@ if __name__ == '__main__':
     # Extracting descriptions
     print("[>] Extracting descriptions of all LDAP objects ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
-        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
+        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes, auth_key=options.auth_key,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps, use_kerberos=options.use_kerberos, kdcHost=options.kdcHost,
         query="(description=*)", attributes=["description"]
     )
     added_words = []
@@ -164,14 +175,18 @@ if __name__ == '__main__':
     # Extracting group names
     print("[>] Extracting group names of all LDAP objects ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
-        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
+        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes, auth_key=options.auth_key,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps, use_kerberos=options.use_kerberos, kdcHost=options.kdcHost,
         query="(objectCategory=group)", attributes=["name"]
     )
     added_words = []
     for dn, data in ldap_results.items():
-        added_words.append(data["name"])
-        added_words += ' '.join(data["name"]).split(' ')
+        if type(data["name"]) == list:
+            added_words += ' '.join([e for e in data["name"] if len(e) != 0]).split(' ')
+            added_words += [e for e in data["name"] if len(e) != 0]
+        else:
+            added_words.append(data["name"])
+            added_words += ' '.join(data["name"]).split(' ')
     added_words = list(set(added_words))
     print("found %d words" % (len(added_words)), flush=True)
     len_before = len(wordlist)
@@ -183,14 +198,18 @@ if __name__ == '__main__':
     # Extracting organizationalUnit
     print("[>] Extracting organizationalUnit names ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
-        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
+        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes, auth_key=options.auth_key,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps, use_kerberos=options.use_kerberos, kdcHost=options.kdcHost,
         query="(objectCategory=organizationalUnit)", attributes=["name"]
     )
     added_words = []
     for dn, data in ldap_results.items():
-        added_words.append(data["name"])
-        added_words += ' '.join(data["name"]).split(' ')
+        if type(data["name"]) == list:
+            added_words += ' '.join([e for e in data["name"] if len(e) != 0]).split(' ')
+            added_words += [e for e in data["name"] if len(e) != 0]
+        else:
+            added_words.append(data["name"])
+            added_words += ' '.join(data["name"]).split(' ')
     added_words = list(set(added_words))
     print("found %d words" % (len(added_words)), flush=True)
     len_before = len(wordlist)
@@ -202,8 +221,8 @@ if __name__ == '__main__':
     # Extracting servicePrincipalName
     print("[>] Extracting servicePrincipalName of all LDAP objects ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
-        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
+        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes, auth_key=options.auth_key,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps, use_kerberos=options.use_kerberos, kdcHost=options.kdcHost,
         query="(servicePrincipalName=*)", attributes=["servicePrincipalName"]
     )
     added_words = []
@@ -223,14 +242,18 @@ if __name__ == '__main__':
     # Extracting trustedDomains
     print("[>] Extracting trustedDomains from LDAP ... ", end="", flush=True)
     ldap_results = raw_ldap_query(
-        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes,
-        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps,
+        auth_domain=options.auth_domain, auth_dc_ip=options.dc_ip, auth_username=options.auth_username, auth_password=options.auth_password, auth_hashes=options.auth_hashes, auth_key=options.auth_key,
+        searchbase=defaultNamingContext, use_ldaps=options.use_ldaps, use_kerberos=options.use_kerberos, kdcHost=options.kdcHost,
         query="(objectClass=trustedDomain)", attributes=["name"]
     )
     added_words = []
     for dn, data in ldap_results.items():
-        added_words.append(data["name"])
-        added_words += data["name"].split('.')
+        if type(data["name"]) == list:
+            added_words += ' '.join([e for e in data["name"] if len(e) != 0]).split('.')
+            added_words += [e for e in data["name"] if len(e) != 0]
+        else:
+            added_words.append(data["name"])
+            added_words += data["name"].split('.')
     added_words = list(set(added_words))
     print("found %d words" % (len(added_words)), flush=True)
     len_before = len(wordlist)
