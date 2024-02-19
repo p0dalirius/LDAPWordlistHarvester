@@ -79,10 +79,13 @@ def parseArgs():
 
 if __name__ == '__main__':
     options = parseArgs()
+    
     if options.auth_hashes is not None:
         if ":" not in options.auth_hashes:
             options.auth_hashes = ":" + options.auth_hashes
-    auth_lm_hash, auth_nt_hash = parse_lm_nt_hashes(options.auth_hashes)
+        auth_lm_hash, auth_nt_hash = parse_lm_nt_hashes(options.auth_hashes)
+    else:
+        auth_lm_hash, auth_nt_hash = None, None
 
     if options.auth_key is not None:
         options.use_kerberos = True
