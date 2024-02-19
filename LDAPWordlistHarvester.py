@@ -9,11 +9,6 @@ import argparse
 from sectools.windows.ldap import raw_ldap_query, init_ldap_session
 from sectools.windows.crypto import nt_hash, parse_lm_nt_hashes
 import os
-import sys
-import sqlite3
-import json
-import xlsxwriter
-import re
 
 
 VERSION = "1.1"
@@ -75,7 +70,7 @@ def parseArgs():
     cred = secret.add_mutually_exclusive_group()
     cred.add_argument("--no-pass", default=False, action="store_true", help="Don't ask for password (useful for -k)")
     cred.add_argument("-p", "--password", dest="auth_password", metavar="PASSWORD", action="store", default=None, help="Password to authenticate with")
-    cred.add_argument("-H", "--hashes", dest="auth_hashes", action="store", metavar="[LMHASH:]NTHASH", help="NT/LM hashes, format is LMhash:NThash")
+    cred.add_argument("-H", "--hashes", dest="auth_hashes", action="store", metavar="[LMHASH:]NTHASH", default=None, help="NT/LM hashes, format is LMhash:NThash")
     cred.add_argument("--aes-key", dest="auth_key", action="store", metavar="hex key", help="AES key to use for Kerberos Authentication (128 or 256 bits)")
     secret.add_argument("-k", "--kerberos", dest="use_kerberos", action="store_true", help="Use Kerberos authentication. Grabs credentials from .ccache file (KRB5CCNAME) based on target parameters. If valid credentials cannot be found, it will use the ones specified in the command line")
 
@@ -98,8 +93,19 @@ if __name__ == '__main__':
 
     wordlist = []
 
-    print("[>] Getting information from remote LDAP host ... ", end="", flush=True)
-    ldap_server, ldap_session = init_ldap_session(auth_domain=options.auth_domain, auth_username=options.auth_username, auth_password=options.auth_password, auth_lm_hash=auth_lm_hash, auth_nt_hash=auth_nt_hash, auth_key=options.auth_key, use_kerberos=options.use_kerberos, kdcHost=options.kdcHost, use_ldaps=options.use_ldaps, auth_dc_ip=options.dc_ip)
+    print("[>] Connecting to remote LDAP host '%s' ... " % options.dc_ip, end="", flush=True)
+    ldap_server, ldap_session = init_ldap_session(
+        auth_domain=options.auth_domain, 
+        auth_username=options.auth_username, 
+        auth_password=options.auth_password, 
+        auth_lm_hash=auth_lm_hash, 
+        auth_nt_hash=auth_nt_hash, 
+        auth_key=options.auth_key, 
+        use_kerberos=options.use_kerberos, 
+        kdcHost=options.kdcHost, 
+        use_ldaps=options.use_ldaps, 
+        auth_dc_ip=options.dc_ip
+    )
     configurationNamingContext = ldap_server.info.other["configurationNamingContext"]
     defaultNamingContext = ldap_server.info.other["defaultNamingContext"]
     print("done.")
