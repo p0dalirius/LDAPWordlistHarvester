@@ -7,11 +7,12 @@
 
 import argparse
 from sectools.windows.ldap import raw_ldap_query, init_ldap_session
-from sectools.windows.crypto import nt_hash, parse_lm_nt_hashes
+from sectools.windows.crypto import parse_lm_nt_hashes
 import os
+import sys
 
 
-VERSION = "1.1"
+VERSION = "1.2"
 
 
 def get_domain_from_distinguished_name(distinguishedName):
@@ -65,7 +66,6 @@ def parseArgs():
     authconn.add_argument("-u", "--user", dest="auth_username", metavar="USER", action="store", default="", help="user to authenticate with")    
     authconn.add_argument("--ldaps", dest="use_ldaps", action="store_true", default=False, help="Use LDAPS instead of LDAP")
 
-
     secret = parser.add_argument_group("Credentials")
     cred = secret.add_mutually_exclusive_group()
     cred.add_argument("--no-pass", default=False, action="store_true", help="Don't ask for password (useful for -k)")
@@ -74,7 +74,21 @@ def parseArgs():
     cred.add_argument("--aes-key", dest="auth_key", action="store", metavar="hex key", help="AES key to use for Kerberos Authentication (128 or 256 bits)")
     secret.add_argument("-k", "--kerberos", dest="use_kerberos", action="store_true", help="Use Kerberos authentication. Grabs credentials from .ccache file (KRB5CCNAME) based on target parameters. If valid credentials cannot be found, it will use the ones specified in the command line")
 
-    return parser.parse_args()
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+        
+    options = parser.parse_args()
+    
+    if options.auth_password is None and options.no_pass == False and options.auth_hashes is None:
+        print("[+] No password of hashes provided and --no-pass is '%s'" % options.no_pass)
+        from getpass import getpass
+        if options.auth_domain is not None:
+            options.auth_password = getpass("  | Provide a password for '%s\\%s':" % (options.auth_domain, options.auth_username))
+        else:
+            options.auth_password = getpass("  | Provide a password for '%s':" % options.auth_username)
+
+    return options
 
 
 if __name__ == '__main__':
